@@ -1,0 +1,56 @@
+
+<h2> Student Profile</h2>
+
+    <h3> {{student['firstname']}} </h3>
+    <h3> {{student['lastname']}} </h3>
+    <h3> {{student['gender']}} </h3>
+    <h3> {{student['email']}} </h3>
+    <h3> {{student['feebalance']}} </h3>
+{% if unitsdone | length >0  %}
+<ul>
+    {% for unit in unitsdone %}
+<li> {{ unit['name'] }}</li>
+    {% endfor %}
+<ul>
+    {% else %}
+<h3> Not taking any Units</h3>
+{%  endif %}
+<button id="update-student">Update</button>
+<div id="update-container">
+    <form action={{url_for('student_by_id', id=student['id'] )}} method='POST'>
+        <h3> Update Student</h3>
+    <input type='text' name='firstname' placeholder='firstname' value={{student['firstname']}}><br><br>
+    <input type='text' name='lastname' placeholder='lastname'  value={{student['lastname']}}       ><br><br>
+    <input type='text' name='gender' placeholder='gender'  value={{student['gender']}}      ><br><br>
+    <input type='text' name='email' placeholder='email'  value={{student['email']}}       ><br><br>
+    <input type='text' name='feebalance' placeholder='feebalance'  value={{student['feebalance']}}      ><br><br>
+    <input type='submit' value="Add Student"><br><br>
+    
+    
+    
+    </form>
+    <style>
+        #update-container{
+            display:none;
+        }
+
+
+    </style>
+
+   <script>
+updateBtn= document.getElementById('update-student')
+updateCont= document.getElementById('update-container')
+
+updateBtn.addEventListener('click', (e)=>{
+if(updateCont.style.display ==='none'){
+    updateCont.style.display = "block"
+}else{
+    updateCont.style.display = 'none'
+}
+
+
+})
+
+
+
+</script> 
