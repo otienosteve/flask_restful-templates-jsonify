@@ -5,6 +5,7 @@ db = SQLAlchemy()
 
 class Student(db.Model,SerializerMixin):
     __tablename__='student'
+    # serialize_rules= ('-course')
 
     id=db.Column(db.Integer,primary_key=True)
     firstname=db.Column(db.String)

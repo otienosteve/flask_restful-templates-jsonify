@@ -2,11 +2,15 @@ from flask import Flask, render_template,request,url_for,jsonify, redirect
 from models import db,Student,Units
 from flask_migrate import Migrate
 from flask_restful import Api, reqparse, Resource
+from flask_cors import CORS, cross_origin
 
 
 
 app =Flask(__name__)
+CORS(app)
 app.config['SQLALCHEMY_DATABASE_URI']= 'sqlite:///db.db'
+# app.config['CORS_ORIGINS']=['http://localhost:3000/']
+app.config['CORS_HEADERS'] = 'Content-Type'
 
 migrate = Migrate(app, db)
 
@@ -34,8 +38,8 @@ def student_by_id(id):
         unitsdone = Units.query.filter_by(student_id=id).all()
         return render_template("single.html", student=student,unitsdone=unitsdone)
     if request.method == 'POST':
-        for key, value in request.form.items():
-            setattr(student, key, value)
+        student = Student(**request.form)
+        db.session.add(student)
         db.session.commit()
         return render_template("single.html", student=student)
 
@@ -48,27 +52,31 @@ def delete_student(id):
             return redirect( url_for('index'))
 
 @app.route('/api', methods=['GET','POST'])
+@cross_origin()
 def apiindex():
 
     if request.method == 'GET':
         students = Student.query.all()
         students_dict= []
         for student in students:
-            students_dict.append(student.to_dict())   
+            students_dict.append(student.to_dict(rules=('-course','-course')))   
         return jsonify(students_dict)
     
     if request.method == 'POST':
-        new_student = Student(**request.form)
+        # obj= request.form.items()
+        print(request.json)
+        new_student = Student(**request.json)
         db.session.add(new_student)
         db.session.commit()
         
-        return jsonify(new_student.to_dict())
+        return jsonify(new_student.to_dict(rules=('-course','-course')))
 
 @app.route('/api/<int:id>', methods=['GET','DELETE','PATCH'])
 def api_by_id(id):
 
     if request.method == 'GET':
-        student =Student.query.filter_by(id =id).first().to_dict()
+        student =Student.query.filter_by(id =id).first().to_dict(rules=('-course','-course'))
+        
         return jsonify(student)
     
     if request.method == 'PATCH':
@@ -76,7 +84,7 @@ def api_by_id(id):
         for key,value in request.form.items():
             setattr(student,key,value)
         db.session.commit()
-        return jsonify(student.to_dict())
+        return jsonify(student.to_dict(rules=('-course','-course')))
     
     if request.method == 'DELETE':
         student =Student.query.filter_by(id =id).first()
@@ -116,6 +124,7 @@ class Students(Resource):
                 "feebalance":student.feebalance
             }
             students_dict.append(student)   
+
         return jsonify(students_dict),200
     
     def post(self):
@@ -123,21 +132,26 @@ class Students(Resource):
         student = Student(**student_details)
         db.session.add(student)
         db.session.commit()
-        return jsonify(student.to_dict()),201
+        return jsonify(student.to_dict(rules=('-course','-course'))),201
         
 
 
 class StudentsByID(Resource):
 
+    def get(self, id):
+        student =Student.query.filter_by(id = id).first()
+        return jsonify(student.to_dict(rules=('-course','-course')),200)
+
     def patch(self,id):
         student_details = student_update.parse_args()
+        print(student_details)
         student =Student.query.filter_by(id = id).first()
         for key,value in student_details.items():
             if value is None:
                 continue
             setattr(student,key,value)
         db.session.commit()
-        return jsonify(student.to_dict())
+        return jsonify(student.to_dict(rules=('-course','-course')),201)
     
     def delete(self,id):
         student =Student.query.filter_by(id =id).first()
