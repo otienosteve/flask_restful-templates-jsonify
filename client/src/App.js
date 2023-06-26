@@ -2,16 +2,19 @@ import logo from './logo.svg';
 import './App.css';
 import { useEffect, useState } from 'react';
 import AddStudent from './AddStudent';
+import MyForm from './MyForm';
+import LessVerboseForm from './LessVerboseForm';
+
 
 
 function App() {
   const [student, setStudent] = useState([])
 
-  useEffect(()=>{
-fetch('http://127.0.0.1:5000/api').then(res=>res.json()).then( data=>{
-    console.log(data)
-    setStudent(data)
-  })}, [])
+//   useEffect(()=>{
+// fetch('http://127.0.0.1:5000/api').then(res=>res.json()).then( data=>{
+//     console.log(data)
+//     setStudent(data)
+//   })}, [])
 
   const addStudent = (student)=>{
     console.log(student)
@@ -28,6 +31,9 @@ headers:{
     <div className="App">
       <h4>FLASK +REACT</h4>
     <AddStudent  addStudent={addStudent} />
+
+
+{/* <MyForm /> */}
 
 
     </div>
