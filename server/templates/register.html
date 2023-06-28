@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <form action="/register" method='POST'>
+        Username:
+<input type="text" name="username" id=""><br><br>
+Email: <input type="text" name="email" id=""><br><br>
+Password:<input type="text" name="password" id=""><br><br>
+Confirm Password<input type="text" name="cnpassword" id=""><br><br>
+
+<input type="submit" value="Register">
+    </form>
+    {% with messages = get_flashed_messages()%}
+
+        {% for msg in messages %}
+        {{msg}}
+        {% endfor %}
+    {% endwith%}
+</body>
+</html>

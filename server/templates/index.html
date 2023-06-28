@@ -1,6 +1,9 @@
 
 <div id="container">
     <div id="student-container">
+        {% if current_user.is_authenticated %}
+        Welcome {{ current_user.username }}
+        {% endif%}
 <h1>Students</h1>
 <table>
     <tr>

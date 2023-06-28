@@ -1,16 +1,24 @@
-from flask import Flask, render_template,request,url_for,jsonify, redirect
-from models import db,Student,Units
+from operator import itemgetter
+
+
+from flask import Flask, render_template,request,url_for,jsonify, redirect,flash
+from models import db,Student,Units,User
 from flask_migrate import Migrate
 from flask_restful import Api, reqparse, Resource
 from flask_cors import CORS, cross_origin
+from flask_login  import LoginManager, logout_user,login_user, current_user,login_required
 
 
 
 app =Flask(__name__)
 CORS(app)
 app.config['SQLALCHEMY_DATABASE_URI']= 'sqlite:///db.db'
-# app.config['CORS_ORIGINS']=['http://localhost:3000/']
+app.config['SECRET_KEY']=b'\xb4\xbe\x0b\xd1x\x88\xdc\xaa\xe83\xa1\nZ\xbc]\xf0\x13\x83J\xd5@\xe0\xca'
+
 app.config['CORS_HEADERS'] = 'Content-Type'
+login_manager=LoginManager()
+login_manager.init_app(app)
+login_manager.login_view='login'
 
 migrate = Migrate(app, db)
 
@@ -18,8 +26,59 @@ db.init_app(app)
 
 api = Api(app)
 
+@login_manager.user_loader
+def load_user(user_id):
+    return User.query.filter_by(id=int(user_id)).first()
+
+@app.route('/login', methods=['POST','GET'])
+def login():
+    if request.method=='POST':
+        email = request.form['email']
+        password = request.form['password']
+        user =User.query.filter_by(email=email).first()
+        if user.password == password:
+            login_user(user)
+        return redirect(url_for('index'))
+        # return current_user.username
+
+    else:
+        return render_template('login.html')
+    
+@app.route('/logout')
+def logout():
+    logout_user()
+    return redirect(url_for('login'))
+
+@app.route('/register', methods=['POST','GET'])
+def register():
+    if request.method=='POST':
+        
+        # print(username,password,cnpassword)
+        if request.form['cnpassword'] != request.form['password']:
+            flash('Paswords do not match')
+            return render_template('register.html')
+        else:
+           
+            new_user= User()
+            for key,value in request.form.items():
+                if key == 'cnfpasword':
+                    continue
+                setattr(new_user,key,value)
+            db.session.add(new_user)
+            db.session.commit()
+            print(request.form)
+            return redirect(url_for('login'))
+
+
+
+            print(request.form)
+       
+    else:
+        return render_template('register.html')
+
 
 @app.route('/', methods=['GET','POST'])
+@login_required
 def index():
     students = Student.query.all()
     if request.method == 'GET':
@@ -52,7 +111,7 @@ def delete_student(id):
             return redirect( url_for('index'))
 
 @app.route('/api', methods=['GET','POST'])
-@cross_origin()
+@login_required
 def apiindex():
 
     if request.method == 'GET':
